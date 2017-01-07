@@ -1,7 +1,7 @@
 {
   "name": "npm-release-plus",
   "version": "1.0.0",
-  "description": "A command line tool to publish npm package",
+  "description": "A command line tool to publish npm module",
   "main": "index.js",
   "repository": {
     "type": "git",
@@ -9,7 +9,6 @@
   },
   "keywords": [
     "npm",
-    "package",
     "release"
   ],
   "author": "Stanley Li",
