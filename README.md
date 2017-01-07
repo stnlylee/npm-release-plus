@@ -13,7 +13,7 @@ old way:
  - git push && git push --tags
  - npm publish
 
-## Usage
+# Usage
 
 It supports the same version options as `npm version`.
 
@@ -23,15 +23,15 @@ And custom commit messages:
 
 `npm-release-plus major -m "my message"`
 
-## Install
+# Install
 
 `npm install -g npm-release-plus`
 
-## Credit
+# Credit
 
 - Forked and inspired from [nmp-release](https://www.npmjs.com/package/npm-release)
 - Added support for Windows system.
 
-## License
+# License
 
 MIT
