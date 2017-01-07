@@ -7,6 +7,9 @@
     "type": "git",
     "url": "git+https://github.com/stnlylee/npm-release-plus.git"
   },
+  "bin": {
+    "npm-release-plus": "./bin/npm-release-plus"
+  },
   "keywords": [
     "npm",
     "release"
