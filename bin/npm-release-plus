@@ -1,0 +1,118 @@
+#!/usr/bin/env node
+
+var spawn = require('child_process').spawn,
+    exec = require('child_process').exec,
+    path = require('path'),
+    fs = require('fs'),
+    argv = require('optimist').argv,
+    colors = require('colors'),
+    version = process.argv[2],
+    semver = require('semver'),
+    os = require('os'),
+    git = require('simple-git'); 
+
+// display error message and exit process with -1
+var exit = function (str) {
+  console.log([].slice.call(arguments).join(' ').red);
+  process.exit(-1);
+};
+
+// copy of exit function and attach "Error:" as first argument
+var error = exit.bind(null, 'Error:');
+
+// display success message
+var success = function () {
+  console.log([].slice.call(arguments).join(' ').green);
+};
+
+// print message
+var msg = function () {
+  console.log([].slice.call(arguments).join(' ').blue);
+};
+
+var done = function () {
+  success('Released new version ' + getCurrentVersion() + ' successfully.');
+  process.exit(0);
+};
+
+// get package.json
+var getPkg = function () {
+  var pkg;
+  try {
+    pkg = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), './package.json')));
+  } catch(e) {
+    error('Could not open a package.json.');
+  }
+  return pkg;
+};
+
+// get version in package.json
+var getCurrentVersion = function () {
+  return getPkg().version;
+};
+
+var oldVersion = getCurrentVersion(),
+    // message is -m "my message" in arguments
+    message = argv.m || argv.message;
+
+// check versions
+if (!semver.valid(oldVersion)) {
+  error('No valid version in package.json found.');
+}
+if (version !== 'major' && version !== 'minor' && version !== 'patch') {
+  if (!semver.valid(version)) {
+    error('No valid version supplied.');
+  }
+  if (semver.lt(version, oldVersion) || semver.eq(version, oldVersion)) {
+    error('Version number must be greater than current version.');
+  }
+}
+
+// Run npm verison (tags & commits)
+msg('Updating version...');
+
+var npm = spawn(process.platform === "win32" ? "npm.cmd" : "npm",
+  ['version', version, '-m', message || "Release v%s."]);
+
+npm.on('close', function (code) {
+  if (code !== 0) return error('npm version failed. Did you commit your changes? Exiting.');
+
+  success('Version bumped from', oldVersion, 'to', getCurrentVersion());
+
+  // Push to github
+  git()
+    .then(function() {
+      msg('Pushing...');
+    })
+    .push(function(err, data) {
+      if(err) {
+        error("Pushing to git failed.");
+      }
+    })
+    .pushTags(function(err, data) {
+      if(err) {
+        error("Pushing tag to git failed.")
+      }
+    })
+    .then(function() {
+      success('Pushed.');
+
+      if (getPkg().private) {
+        msg('Publish to npm cancelled, this is a private repo.');
+        return done();
+      }
+
+      msg('Publishing to npm...');
+
+      // Publish to npm
+      var publish = spawn(process.platform === "win32" ? "npm.cmd" : "npm", ['publish']);
+
+      publish.on('close', function (code) {
+        if (code !== 0) return error('npm publish failed. Exiting.');
+
+        success('Published to npm.');
+        done();
+
+      });
+    });
+});

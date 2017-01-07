@@ -1,0 +1,27 @@
+{
+  "name": "npm-release-plus",
+  "version": "0.0.1",
+  "description": "A command line tool to publish npm package",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stnlylee/npm-release-plus.git"
+  },
+  "keywords": [
+    "npm",
+    "package",
+    "release"
+  ],
+  "author": "Stanley Li",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/stnlylee/npm-release-plus/issues"
+  },
+  "homepage": "https://github.com/stnlylee/npm-release-plus#readme",
+  "dependencies": {
+    "colors": "^0.6.2",
+    "optimist": "^0.6.0",
+    "semver": "^5.3.0",
+    "simple-git": "^1.65.0"
+  }
+}
