@@ -68,51 +68,61 @@ if (version !== 'major' && version !== 'minor' && version !== 'patch') {
   }
 }
 
-// Run npm verison (tags & commits)
-msg('Updating version...');
+msg("Pull the latest changes...");
 
-var npm = spawn(process.platform === "win32" ? "npm.cmd" : "npm",
+git().pull(function(err, data){
+  if (err) {
+    error("Failed to pull the latest");
+  }
+  
+  // Run npm verison (tags & commits)
+  msg('Updating version...');
+
+  var npm = spawn(process.platform === "win32" ? "npm.cmd" : "npm",
   ['version', version, '-m', message || "Release v%s."]);
 
-npm.on('close', function (code) {
-  if (code !== 0) return error('npm version failed. Did you commit your changes? Exiting.');
+  npm.on('close', function (code) {
+    if (code !== 0) return error('npm version failed. Did you commit your changes? Exiting.');
 
-  success('Version bumped from', oldVersion, 'to', getCurrentVersion());
+    success('Version bumped from', oldVersion, 'to', getCurrentVersion());
 
-  // Push to github
-  git()
-    .then(function() {
-      msg('Pushing...');
-    })
-    .push(function(err, data) {
-      if(err) {
-        error("Pushing to git failed.");
-      }
-    })
-    .pushTags(function(err, data) {
-      if(err) {
-        error("Pushing tag to git failed.")
-      }
-    })
-    .then(function() {
-      success('Pushed.');
+    // Push to github
+    git()
+      .then(function() {
+        msg('Pushing...');
+      })
+      .push(function(err, data) {
+        if(err) {
+          error("Pushing to git failed.");
+        }
+      })
+      .pushTags(function(err, data) {
+        if(err) {
+          error("Pushing tag to git failed.")
+        }
+      })
+      .then(function() {
+        success('Pushed.');
 
-      if (getPkg().private) {
-        msg('Publish to npm cancelled, this is a private repo.');
-        return done();
-      }
+        if (getPkg().private) {
+          msg('Publish to npm cancelled, this is a private repo.');
+          return done();
+        }
 
-      msg('Publishing to npm...');
+        msg('Publishing to npm...');
 
-      // Publish to npm
-      var publish = spawn(process.platform === "win32" ? "npm.cmd" : "npm", ['publish']);
+        // Publish to npm
+        var publish = spawn(process.platform === "win32" ? "npm.cmd" : "npm", ['publish']);
 
-      publish.on('close', function (code) {
-        if (code !== 0) return error('npm publish failed. Exiting.');
+        publish.on('close', function (code) {
+          if (code !== 0) return error('npm publish failed. Exiting.');
 
-        success('Published to npm.');
-        done();
+          success('Published to npm.');
+          done();
 
+        });
       });
     });
+
 });
+
